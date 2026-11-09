@@ -1,8 +1,9 @@
+
 name: CI
 
 on:
-  push:
   workflow_dispatch:
+  push:
 
 jobs:
   build:
@@ -28,6 +29,10 @@ jobs:
         env:
           NGROK_AUTH_TOKEN: ${{ secrets.NGROK_AUTH_TOKEN }}
         run: |
+          if ([string]::IsNullOrWhiteSpace($env:NGROK_AUTH_TOKEN)) {
+            throw "NGROK_AUTH_TOKEN secret is missing."
+          }
+
           .\ngrok\ngrok.exe config add-authtoken $env:NGROK_AUTH_TOKEN
 
       - name: Enable Remote Desktop
@@ -35,6 +40,10 @@ jobs:
         env:
           RDP_PASSWORD: ${{ secrets.RDP_PASSWORD }}
         run: |
+          if ([string]::IsNullOrWhiteSpace($env:RDP_PASSWORD)) {
+            throw "RDP_PASSWORD secret is missing. Add it in GitHub Settings."
+          }
+
           Set-ItemProperty `
             -Path 'HKLM:\System\CurrentControlSet\Control\Terminal Server' `
             -Name "fDenyTSConnections" -Value 0
